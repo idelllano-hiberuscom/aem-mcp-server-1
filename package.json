@@ -1,0 +1,59 @@
+{
+  "name": "aem-mcp-server",
+  "version": "1.6.2",
+  "description": "AEM MCP server. Chat with your AEM instance for content, component, and asset operations.",
+  "license": "AGPL-3.0-only",
+  "private": false,
+  "mcpName": "io.github.ivaanblnc/aem-mcp-server",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ivaanblnc/aem-mcp-server.git"
+  },
+  "keywords": [
+    "AEM",
+    "MCP",
+    "Model Context Protocol",
+    "LLM",
+    "Adobe Experience Manager",
+    "TypeScript"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "aem-mcp": "dist/cli.js"
+  },
+  "files": [
+    "dist/**/*.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run build:types && npm run build:ts",
+    "build:ts": "esbuild src/**/*.ts src/*.ts --outdir=dist --platform=node --minify",
+    "build:types": "tsc --emitDeclarationOnly",
+    "start": "MCP_LOGGER=true node dist/cli.js",
+    "test:dev": "node ./dist/cli.js",
+    "test:npm": "npm pack && npm install -g ./aem-mcp-server-$npm_package_version.tgz && aem-mcp -e -H=http://localhost:5502"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "yargs": "^18.0.0",
+    "zod": "3.24.4",
+    "zod-to-json-schema": "3.24.6"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.3.0",
+    "@types/yargs": "^17.0.33",
+    "esbuild": "^0.25.9",
+    "pptxgenjs": "^4.0.1",
+    "typescript": "^5.9.2"
+  },
+  "type": "module"
+}
