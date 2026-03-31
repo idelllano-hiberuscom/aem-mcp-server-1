@@ -24,7 +24,7 @@ const argv = yargs(hideBin(process.argv)).options({
     type: 'string',
     default: '',
     alias: 'I',
-    describe: 'Named AEM instances: "local:http://localhost:4502:admin:admin,qa:https://qa.example.com:user:pass"',
+    describe: 'Named AEM instances. Formats: "name:host", "name:host:user:pass", "name:host:basic:user:pass", "name:host:oauth:clientId:clientSecret". Example: "dev:https://author-dev...:oauth:ID:SECRET,stage:https://author-stage...:oauth:ID:SECRET,prod:https://author-prod...:oauth:ID:SECRET"',
   },
 })
   .help()

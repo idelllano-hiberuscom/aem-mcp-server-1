@@ -39,39 +39,78 @@ export class InstanceRegistry {
 
       for (const entry of entries) {
         const parts = entry.split(':');
-        if (parts.length < 4) {
-          LOGGER.error(`Invalid instance format: "${entry}" — expected "name:host:user:pass" or "name:https://host:user:pass"`);
+        if (parts.length < 2) {
+          LOGGER.error(`Invalid instance format: "${entry}" — expected at least "name:host"`);
           continue;
         }
 
-        let name: string, host: string, user: string, pass: string;
+        let name = parts[0];
+        let host = '';
+        let user = '';
+        let pass = '';
+        let id = '';
+        let secret = '';
+
+        let credentialParts: string[] = [];
 
         if (parts[1]?.startsWith('//') || parts[2]?.startsWith('//')) {
-          name = parts[0];
-          // Reconstruct protocol://host, then check if next part is a numeric port
+          // Format with protocol in host, e.g. name:https://author-...:oauth:clientId:clientSecret
           host = parts[1] + ':' + parts[2];
           let nextIdx = 3;
           if (parts[nextIdx] && /^\d+$/.test(parts[nextIdx])) {
             host += ':' + parts[nextIdx];
             nextIdx++;
           }
-          user = parts[nextIdx] || 'admin';
-          pass = parts.slice(nextIdx + 1).join(':') || 'admin';
+          credentialParts = parts.slice(nextIdx);
         } else {
-          name = parts[0];
+          // Format without protocol in host, e.g. name:author.example.com:user:pass
           host = parts[1];
-          user = parts[2];
-          pass = parts.slice(3).join(':');
           if (!host.startsWith('http')) {
             host = `http://${host}`;
           }
+          credentialParts = parts.slice(2);
+        }
+
+        // Credentials format options:
+        // 1) name:host:user:pass
+        // 2) name:host:oauth:clientId:clientSecret
+        // 3) name:host                -> uses global --id/--secret or --user/--pass
+        // 4) name:host:basic:user:pass
+        const mode = credentialParts[0]?.toLowerCase();
+        if (mode === 'oauth') {
+          id = credentialParts[1] || '';
+          secret = credentialParts.slice(2).join(':') || '';
+        } else if (mode === 'basic') {
+          user = credentialParts[1] || '';
+          pass = credentialParts.slice(2).join(':') || '';
+        } else if (credentialParts.length >= 2) {
+          user = credentialParts[0] || '';
+          pass = credentialParts.slice(1).join(':') || '';
+        }
+
+        // If instance credentials are omitted, reuse global CLI credentials.
+        if (!id && !secret && !user && !pass) {
+          if (params.id && params.secret) {
+            id = params.id;
+            secret = params.secret;
+          } else {
+            user = params.user || 'admin';
+            pass = params.pass || 'admin';
+          }
+        }
+
+        if ((id && !secret) || (!id && secret)) {
+          LOGGER.error(`Invalid OAuth credentials in instance "${name}". Both clientId and clientSecret are required.`);
+          continue;
         }
 
         instances.push({
           name,
           host,
-          user: user || 'admin',
-          pass: pass || 'admin',
+          user: user || '',
+          pass: pass || '',
+          id: id || undefined,
+          secret: secret || undefined,
         });
       }
 
