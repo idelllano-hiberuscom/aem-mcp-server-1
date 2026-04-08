@@ -188,6 +188,12 @@ Solo tras confirmación explícita ejecutar `addComponent` y opcionalmente `upda
 5. **Para operaciones masivas (>10 ítems),** generar siempre un plan de ejecución y pedir aprobación antes de proceder.
 6. **Verificar existencia del path antes de operar.** Usar `getNodeContent` o `runQueryBuilder` para confirmar que el path existe.
 
+
+**Reglas de equipo:**
+
+1. **Prioridad del Bundle:** Si recibes un aem_task_bundle.json, las instrucciones de ese JSON tienen prioridad sobre cualquier búsqueda manual.
+2. **Reporte de Estado:** Al terminar cada fase (DAM, Página, Componentes), genera un JSON de respuesta que el Orquestador pueda leer.
+3. **Manejo de Fallos:** Si un componente del bundle falla, usa la Fase S6_HOLD para explicar el error técnico (ej: "Falta el resourceType en CRX") para que el Orquestador se lo traduzca al usuario.
 ---
 
 ## 4. SESIÓN MCP — COMANDOS macOS (bash/zsh)
